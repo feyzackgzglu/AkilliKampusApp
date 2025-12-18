@@ -6,7 +6,25 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		69D7F9FC2EF44A6A004C1D91 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 69D7F9FB2EF44A6A004C1D91 /* FirebaseAnalytics */; };
+		69D7FA022EF44DF5004C1D91 /* FirebaseAnalyticsIdentitySupport in Frameworks */ = {isa = PBXBuildFile; productRef = 69D7FA012EF44DF5004C1D91 /* FirebaseAnalyticsIdentitySupport */; };
+		69D7FA132EF44E84004C1D91 /* AkilliKapmusApp.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = 69D7FA072EF44E84004C1D91 /* AkilliKapmusApp.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		69D7FA1A2EF44F5F004C1D91 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 69D7FA192EF44F5F004C1D91 /* FirebaseAuth */; };
+		69D7FA1C2EF44F5F004C1D91 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 69D7FA1B2EF44F5F004C1D91 /* FirebaseFirestore */; };
+		69D7FA5E2EF456BC004C1D91 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 69D7FA5D2EF456BC004C1D91 /* GoogleSignIn */; };
+		69D7FA602EF456BC004C1D91 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 69D7FA5F2EF456BC004C1D91 /* GoogleSignInSwift */; };
+		69D7FA642EF459CF004C1D91 /* GoogleService-Info2.plist in Resources */ = {isa = PBXBuildFile; fileRef = 69D7FA632EF459CF004C1D91 /* GoogleService-Info2.plist */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
+		69D7FA112EF44E84004C1D91 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 69F127892EE312D5001671B5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 69D7FA062EF44E84004C1D91;
+			remoteInfo = AkilliKapmusApp;
+		};
 		69F127A42EE312D7001671B5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 69F127892EE312D5001671B5 /* Project object */;
@@ -23,15 +41,59 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		69D7FA182EF44E84004C1D91 /* Embed ExtensionKit Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(EXTENSIONS_FOLDER_PATH)";
+			dstSubfolderSpec = 16;
+			files = (
+				69D7FA132EF44E84004C1D91 /* AkilliKapmusApp.appex in Embed ExtensionKit Extensions */,
+			);
+			name = "Embed ExtensionKit Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		69D7FA072EF44E84004C1D91 /* AkilliKapmusApp.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = AkilliKapmusApp.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		69D7FA632EF459CF004C1D91 /* GoogleService-Info2.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info2.plist"; sourceTree = "<group>"; };
 		69F127912EE312D5001671B5 /* AkilliKampusApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AkilliKampusApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		69F127A32EE312D7001671B5 /* AkilliKampusAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AkilliKampusAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		69F127AD2EE312D7001671B5 /* AkilliKampusAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AkilliKampusAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		69D7FA142EF44E84004C1D91 /* Exceptions for "AkilliKapmusApp" folder in "AkilliKapmusApp" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 69D7FA062EF44E84004C1D91 /* AkilliKapmusApp */;
+		};
+		69D7FA622EF4585F004C1D91 /* Exceptions for "AkilliKampusApp" folder in "AkilliKampusApp" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 69F127902EE312D5001671B5 /* AkilliKampusApp */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		69D7FA082EF44E84004C1D91 /* AkilliKapmusApp */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				69D7FA142EF44E84004C1D91 /* Exceptions for "AkilliKapmusApp" folder in "AkilliKapmusApp" target */,
+			);
+			path = AkilliKapmusApp;
+			sourceTree = "<group>";
+		};
 		69F127932EE312D5001671B5 /* AkilliKampusApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				69D7FA622EF4585F004C1D91 /* Exceptions for "AkilliKampusApp" folder in "AkilliKampusApp" target */,
+			);
 			path = AkilliKampusApp;
 			sourceTree = "<group>";
 		};
@@ -48,10 +110,23 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		69D7FA042EF44E84004C1D91 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		69F1278E2EE312D5001671B5 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				69D7FA5E2EF456BC004C1D91 /* GoogleSignIn in Frameworks */,
+				69D7FA022EF44DF5004C1D91 /* FirebaseAnalyticsIdentitySupport in Frameworks */,
+				69D7FA1C2EF44F5F004C1D91 /* FirebaseFirestore in Frameworks */,
+				69D7FA602EF456BC004C1D91 /* GoogleSignInSwift in Frameworks */,
+				69D7FA1A2EF44F5F004C1D91 /* FirebaseAuth in Frameworks */,
+				69D7F9FC2EF44A6A004C1D91 /* FirebaseAnalytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,7 +153,9 @@
 				69F127932EE312D5001671B5 /* AkilliKampusApp */,
 				69F127A62EE312D7001671B5 /* AkilliKampusAppTests */,
 				69F127B02EE312D7001671B5 /* AkilliKampusAppUITests */,
+				69D7FA082EF44E84004C1D91 /* AkilliKapmusApp */,
 				69F127922EE312D5001671B5 /* Products */,
+				69D7FA632EF459CF004C1D91 /* GoogleService-Info2.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -88,6 +165,7 @@
 				69F127912EE312D5001671B5 /* AkilliKampusApp.app */,
 				69F127A32EE312D7001671B5 /* AkilliKampusAppTests.xctest */,
 				69F127AD2EE312D7001671B5 /* AkilliKampusAppUITests.xctest */,
+				69D7FA072EF44E84004C1D91 /* AkilliKapmusApp.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -95,6 +173,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		69D7FA062EF44E84004C1D91 /* AkilliKapmusApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 69D7FA152EF44E84004C1D91 /* Build configuration list for PBXNativeTarget "AkilliKapmusApp" */;
+			buildPhases = (
+				69D7FA032EF44E84004C1D91 /* Sources */,
+				69D7FA042EF44E84004C1D91 /* Frameworks */,
+				69D7FA052EF44E84004C1D91 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				69D7FA082EF44E84004C1D91 /* AkilliKapmusApp */,
+			);
+			name = AkilliKapmusApp;
+			packageProductDependencies = (
+			);
+			productName = AkilliKapmusApp;
+			productReference = 69D7FA072EF44E84004C1D91 /* AkilliKapmusApp.appex */;
+			productType = "com.apple.product-type.extensionkit-extension";
+		};
 		69F127902EE312D5001671B5 /* AkilliKampusApp */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 69F127B72EE312D7001671B5 /* Build configuration list for PBXNativeTarget "AkilliKampusApp" */;
@@ -102,16 +202,24 @@
 				69F1278D2EE312D5001671B5 /* Sources */,
 				69F1278E2EE312D5001671B5 /* Frameworks */,
 				69F1278F2EE312D5001671B5 /* Resources */,
+				69D7FA182EF44E84004C1D91 /* Embed ExtensionKit Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				69D7FA122EF44E84004C1D91 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				69F127932EE312D5001671B5 /* AkilliKampusApp */,
 			);
 			name = AkilliKampusApp;
 			packageProductDependencies = (
+				69D7F9FB2EF44A6A004C1D91 /* FirebaseAnalytics */,
+				69D7FA012EF44DF5004C1D91 /* FirebaseAnalyticsIdentitySupport */,
+				69D7FA192EF44F5F004C1D91 /* FirebaseAuth */,
+				69D7FA1B2EF44F5F004C1D91 /* FirebaseFirestore */,
+				69D7FA5D2EF456BC004C1D91 /* GoogleSignIn */,
+				69D7FA5F2EF456BC004C1D91 /* GoogleSignInSwift */,
 			);
 			productName = AkilliKampusApp;
 			productReference = 69F127912EE312D5001671B5 /* AkilliKampusApp.app */;
@@ -173,6 +281,9 @@
 				LastSwiftUpdateCheck = 1640;
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
+					69D7FA062EF44E84004C1D91 = {
+						CreatedOnToolsVersion = 16.4;
+					};
 					69F127902EE312D5001671B5 = {
 						CreatedOnToolsVersion = 16.4;
 					};
@@ -195,6 +306,10 @@
 			);
 			mainGroup = 69F127882EE312D5001671B5;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				69D7F9FA2EF448C9004C1D91 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				69D7FA5C2EF456BC004C1D91 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 69F127922EE312D5001671B5 /* Products */;
 			projectDirPath = "";
@@ -203,15 +318,24 @@
 				69F127902EE312D5001671B5 /* AkilliKampusApp */,
 				69F127A22EE312D7001671B5 /* AkilliKampusAppTests */,
 				69F127AC2EE312D7001671B5 /* AkilliKampusAppUITests */,
+				69D7FA062EF44E84004C1D91 /* AkilliKapmusApp */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		69D7FA052EF44E84004C1D91 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		69F1278F2EE312D5001671B5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				69D7FA642EF459CF004C1D91 /* GoogleService-Info2.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -232,6 +356,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		69D7FA032EF44E84004C1D91 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		69F1278D2EE312D5001671B5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -256,6 +387,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		69D7FA122EF44E84004C1D91 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 69D7FA062EF44E84004C1D91 /* AkilliKapmusApp */;
+			targetProxy = 69D7FA112EF44E84004C1D91 /* PBXContainerItemProxy */;
+		};
 		69F127A52EE312D7001671B5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 69F127902EE312D5001671B5 /* AkilliKampusApp */;
@@ -269,6 +405,58 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		69D7FA162EF44E84004C1D91 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = AkilliKapmusApp/AkilliKapmusApp.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AkilliKapmusApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = AkilliKapmusApp;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.feyzaacikgozoglu.AkilliKampusApp.AkilliKapmusApp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		69D7FA172EF44E84004C1D91 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = AkilliKapmusApp/AkilliKapmusApp.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AkilliKapmusApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = AkilliKapmusApp;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.feyzaacikgozoglu.AkilliKampusApp.AkilliKapmusApp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		69F127B52EE312D7001671B5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -395,8 +583,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AkilliKampusApp/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -422,8 +614,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AkilliKampusApp/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -513,6 +709,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		69D7FA152EF44E84004C1D91 /* Build configuration list for PBXNativeTarget "AkilliKapmusApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				69D7FA162EF44E84004C1D91 /* Debug */,
+				69D7FA172EF44E84004C1D91 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		69F1278C2EE312D5001671B5 /* Build configuration list for PBXProject "AkilliKampusApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -550,6 +755,58 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		69D7F9FA2EF448C9004C1D91 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.7.0;
+			};
+		};
+		69D7FA5C2EF456BC004C1D91 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		69D7F9FB2EF44A6A004C1D91 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 69D7F9FA2EF448C9004C1D91 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		69D7FA012EF44DF5004C1D91 /* FirebaseAnalyticsIdentitySupport */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 69D7F9FA2EF448C9004C1D91 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalyticsIdentitySupport;
+		};
+		69D7FA192EF44F5F004C1D91 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 69D7F9FA2EF448C9004C1D91 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		69D7FA1B2EF44F5F004C1D91 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 69D7F9FA2EF448C9004C1D91 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		69D7FA5D2EF456BC004C1D91 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 69D7FA5C2EF456BC004C1D91 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		69D7FA5F2EF456BC004C1D91 /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 69D7FA5C2EF456BC004C1D91 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 69F127892EE312D5001671B5 /* Project object */;
 }
