@@ -8,10 +8,11 @@ enum UserRole: String, Codable {
 struct User: Identifiable, Codable {
     let id: String
     var name: String
-    var email: String
+    let email: String
     var department: String? // Birim (Öğrenci İşleri, Mimarlık Fak. vb.)
     var role: UserRole
-    var followedIncidentIds: [UUID] = [] // Takip edilen bildirim ID'leri
+    var followedIncidentIds: [UUID] // Takip edilen bildirim ID'leri
+    var notificationPreferences: [String] = IncidentType.allCases.map { $0.rawValue } // Varsayılan: Hepsi açık
     
     // Mock Users
     static let mockUser = User(

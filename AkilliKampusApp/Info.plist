@@ -15,5 +15,9 @@
 	</array>
 	<key>GIDClientID</key>
 	<string>640876175434-ulsa1u784i8ocljp8q56d3h3hhlet1o3.apps.googleusercontent.com</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Olay bildirimi yaparken konumunuzu harita üzerinde göstermek ve en yakın bildirimleri listelemek için konum iznine ihtiyaç duyuyoruz.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Olay bildirimi yaparken konumunuzu harita üzerinde göstermek ve en yakın bildirimleri listelemek için konum iznine ihtiyaç duyuyoruz.</string>
 </dict>
 </plist>

@@ -6,18 +6,26 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let locationManager = CLLocationManager()
     
     @Published var userLocation: CLLocationCoordinate2D?
+    @Published var authorizationStatus: CLAuthorizationStatus = .notDetermined
     @Published var permissionDenied = false
     
     override init() {
         super.init()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.requestWhenInUseAuthorization()
-        locationManager.startUpdatingLocation()
+        authorizationStatus = locationManager.authorizationStatus
+        
+        if authorizationStatus == .notDetermined {
+            locationManager.requestWhenInUseAuthorization()
+        }
     }
     
-    func requestLocation() {
+    func requestPermission() {
         locationManager.requestWhenInUseAuthorization()
+    }
+    
+    func startUpdating() {
+        locationManager.startUpdatingLocation()
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
@@ -32,14 +40,19 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        switch manager.authorizationStatus {
-        case .denied, .restricted:
-            permissionDenied = true
-        case .authorizedWhenInUse, .authorizedAlways:
-            permissionDenied = false
-            locationManager.startUpdatingLocation()
-        default:
-            break
+        DispatchQueue.main.async {
+            self.authorizationStatus = manager.authorizationStatus
+            switch manager.authorizationStatus {
+            case .denied, .restricted:
+                self.permissionDenied = true
+            case .authorizedWhenInUse, .authorizedAlways:
+                self.permissionDenied = false
+                self.locationManager.startUpdatingLocation()
+            case .notDetermined:
+                self.permissionDenied = false
+            @unknown default:
+                break
+            }
         }
     }
 }

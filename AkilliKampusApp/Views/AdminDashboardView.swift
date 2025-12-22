@@ -2,12 +2,27 @@ import SwiftUI
 
 struct AdminDashboardView: View {
     @ObservedObject var manager: IncidentManager
+    @ObservedObject var authManager: AuthManager
     @State private var showEmergencyAlert = false
     @State private var emergencyMessage = ""
     
     var body: some View {
         NavigationView {
             List {
+                // Veri Yönetimi
+                Section(header: Text("Veri Yönetimi")) {
+                    Button(action: {
+                        if let user = authManager.currentUser {
+                            manager.seedSampleData(user: user)
+                        }
+                    }) {
+                        HStack {
+                            Image(systemName: "square.and.arrow.up.on.square.fill")
+                            Text("Örnek Verileri Yükle")
+                        }
+                    }
+                }
+                
                 // Acil Durum Modülü
                 Section(header: Text("Acil Durum Yönetimi")) {
                     Button(action: {
@@ -30,7 +45,7 @@ struct AdminDashboardView: View {
                 // Bildirim Yönetimi
                 Section(header: Text("Tüm Bildirimler")) {
                     ForEach(manager.incidents) { incident in
-                        NavigationLink(destination: IncidentDetailView(incident: incident, manager: manager, authManager: AuthManager())) {
+                        NavigationLink(destination: IncidentDetailView(incident: incident, manager: manager, authManager: authManager)) {
                             HStack {
                                 Circle()
                                     .fill(incident.status.color)
@@ -74,18 +89,21 @@ struct AdminDashboardView: View {
                         .padding()
                     
                     Button(action: {
-                        // Mock send action
-                        showEmergencyAlert = false
-                        emergencyMessage = ""
+                        if !emergencyMessage.isEmpty {
+                            manager.sendEmergencyBroadcast(message: emergencyMessage)
+                            showEmergencyAlert = false
+                            emergencyMessage = ""
+                        }
                     }) {
                         Text("YAYINLA")
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.red)
+                            .background(emergencyMessage.isEmpty ? Color.gray : Color.red)
                             .foregroundColor(.white)
                             .cornerRadius(10)
                     }
+                    .disabled(emergencyMessage.isEmpty)
                     .padding(.horizontal)
                     
                     Button("İptal") {

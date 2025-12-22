@@ -8,10 +8,11 @@ class AuthManager: ObservableObject {
     @Published var isAuthenticated = false
     @Published var authError: String?
     
-    // Kampüs domain kısıtlaması (İsteğe bağlı, kodda vardı koruyalım)
-    private let allowedDomain = "kampus.edu.tr"
+    // Kampüs domain kısıtlamaları (Atatürk Üniversitesi)
+    private let allowedDomains = ["atauni.edu.tr", "ogr.atauni.edu.tr"]
     private var db = Firestore.firestore()
     private var authStateListenerHandle: AuthStateDidChangeListenerHandle?
+    private var userListenerRegistration: ListenerRegistration?
     
     init() {
         startAuthListener()
@@ -21,6 +22,7 @@ class AuthManager: ObservableObject {
         if let handle = authStateListenerHandle {
             Auth.auth().removeStateDidChangeListener(handle)
         }
+        userListenerRegistration?.remove()
     }
 
     // Google Sign-In
@@ -86,11 +88,13 @@ class AuthManager: ObservableObject {
         authStateListenerHandle = Auth.auth().addStateDidChangeListener { [weak self] _, authUser in
             if let authUser = authUser {
                 // Kullanıcı giriş yapmış, Firestore'dan detayları çek
-                self?.fetchUser(uid: authUser.uid)
+                self?.startListeningForUser(uid: authUser.uid)
             } else {
                 // Çıkış yapmış
                 self?.currentUser = nil
                 self?.isAuthenticated = false
+                self?.userListenerRegistration?.remove()
+                self?.userListenerRegistration = nil
             }
         }
     }
@@ -124,8 +128,9 @@ class AuthManager: ObservableObject {
         }
         
         // Domain kontrolü
-        if !email.lowercased().hasSuffix("@" + allowedDomain) {
-            authError = "Kayıt olmak için @\(allowedDomain) uzantılı kurumsal e-posta gereklidir."
+        let hasValidDomain = allowedDomains.contains { email.lowercased().hasSuffix("@" + $0) }
+        if !hasValidDomain {
+            authError = "Kayıt olmak için üniversite e-postası (@atauni.edu.tr veya @ogr.atauni.edu.tr) gereklidir."
             return
         }
         
@@ -178,7 +183,8 @@ class AuthManager: ObservableObject {
             "email": user.email,
             "department": user.department ?? "",
             "role": user.role.rawValue,
-            "followedIncidentIds": user.followedIncidentIds.map { $0.uuidString }
+            "followedIncidentIds": user.followedIncidentIds.map { $0.uuidString },
+            "notificationPreferences": user.notificationPreferences
         ]
         
         db.collection("users").document(user.id).setData(userData) { [weak self] error in
@@ -186,23 +192,38 @@ class AuthManager: ObservableObject {
                 print("Error saving user data: \(error)")
                 self?.authError = "Kullanıcı bilgileri kaydedilemedi."
             } else {
-                // Kayıt başarılı, state'i manuel güncelle (gecikmeyi önlemek için)
                 self?.currentUser = user
                 self?.isAuthenticated = true
             }
         }
     }
     
-    private func fetchUser(uid: String) {
-        db.collection("users").document(uid).getDocument { [weak self] snapshot, error in
+    func toggleNotificationPreference(type: IncidentType) {
+        guard var user = currentUser else { return }
+        let typeStr = type.rawValue
+        
+        if user.notificationPreferences.contains(typeStr) {
+            user.notificationPreferences.removeAll { $0 == typeStr }
+        } else {
+            user.notificationPreferences.append(typeStr)
+        }
+        
+        // Firestore'u güncelle
+        db.collection("users").document(user.id).updateData([
+            "notificationPreferences": user.notificationPreferences
+        ])
+    }
+    
+    private func startListeningForUser(uid: String) {
+        userListenerRegistration?.remove()
+        userListenerRegistration = db.collection("users").document(uid).addSnapshotListener { [weak self] snapshot, error in
             if let error = error {
-                print("Error fetching user: \(error)")
+                print("Error listening for user: \(error)")
                 self?.authError = "Kullanıcı bilgileri alınamadı."
                 return
             }
             
             guard let data = snapshot?.data() else {
-                // Kullanıcı Auth'da var ama Firestore'da yoksa? (Eski kullanıcı veya hatali kayıt)
                 print("User data not found in Firestore")
                 return
             }
@@ -213,9 +234,10 @@ class AuthManager: ObservableObject {
             let email = data["email"] as? String ?? ""
             let department = data["department"] as? String
             let roleString = data["role"] as? String ?? "User"
-            let role = UserRole(rawValue: roleString) ?? .user
+            let role = UserRole(rawValue: roleString.lowercased().capitalized) ?? .user
             let followedIdsStrings = data["followedIncidentIds"] as? [String] ?? []
             let followedIds = followedIdsStrings.compactMap { UUID(uuidString: $0) }
+            let notificationPrefs = data["notificationPreferences"] as? [String] ?? IncidentType.allCases.map { $0.rawValue }
             
             let user = User(
                 id: id,
@@ -223,7 +245,8 @@ class AuthManager: ObservableObject {
                 email: email,
                 department: department,
                 role: role,
-                followedIncidentIds: followedIds
+                followedIncidentIds: followedIds,
+                notificationPreferences: notificationPrefs
             )
             
             DispatchQueue.main.async {

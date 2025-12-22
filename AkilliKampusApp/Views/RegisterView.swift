@@ -14,8 +14,9 @@ struct RegisterView: View {
             Form {
                 Section(header: Text("Kişisel Bilgiler")) {
                     TextField("Ad Soyad", text: $name)
-                    TextField("E-posta", text: $email)
+                    TextField("feyza@ogr.atauni.edu.tr", text: $email)
                         .autocapitalization(.none)
+                        .keyboardType(.emailAddress)
                     TextField("Birim / Bölüm", text: $department)
                 }
                 

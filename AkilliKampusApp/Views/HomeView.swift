@@ -3,6 +3,7 @@ import SwiftUI
 struct HomeView: View {
     @ObservedObject var incidentManager: IncidentManager
     @ObservedObject var authManager: AuthManager
+    @ObservedObject var locationManager: LocationManager
     
     // FAB için Sheet State
     @State private var showReportSheet = false
@@ -82,7 +83,7 @@ struct HomeView: View {
             }
             .sheet(isPresented: $showReportSheet) {
                  // Sheet içinde kendi Navigation'ı olan ReportIncidentView açılır
-                 ReportIncidentView(manager: incidentManager, authManager: authManager)
+                 ReportIncidentView(manager: incidentManager, authManager: authManager, locationManager: locationManager)
             }
         }
     }

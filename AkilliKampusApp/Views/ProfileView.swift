@@ -45,13 +45,17 @@ struct ProfileView: View {
                     }
                 }
                 
-                // Ayarlar (Mock)
-                Section(header: Text("Bildirim Ayarları")) {
-                    Toggle(isOn: .constant(true)) {
-                        Text("Durum Güncellemeleri")
-                    }
-                    Toggle(isOn: .constant(true)) {
-                        Text("Acil Duyurular")
+                // Ayarlar
+                if let user = authManager.currentUser {
+                    Section(header: Text("Bildirim Ayarları")) {
+                        ForEach(IncidentType.allCases) { type in
+                            Toggle(isOn: Binding(
+                                get: { user.notificationPreferences.contains(type.rawValue) },
+                                set: { _ in authManager.toggleNotificationPreference(type: type) }
+                            )) {
+                                Label(type.rawValue, systemImage: type.iconName)
+                            }
+                        }
                     }
                 }
                 
@@ -60,7 +64,11 @@ struct ProfileView: View {
                     Section(header: Text("Takip Ettiklerim")) {
                         ForEach(incidentManager.incidents.filter { user.followedIncidentIds.contains($0.id) }) { incident in
                             NavigationLink(destination: IncidentDetailView(incident: incident, manager: incidentManager, authManager: authManager)) {
-                                Text(incident.title)
+                                HStack {
+                                    Image(systemName: incident.type.iconName)
+                                        .foregroundColor(incident.type.color)
+                                    Text(incident.title)
+                                }
                             }
                         }
                     }

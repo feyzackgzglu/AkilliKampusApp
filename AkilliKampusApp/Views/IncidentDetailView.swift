@@ -38,6 +38,35 @@ struct IncidentDetailView: View {
                 .frame(height: 200)
                 .cornerRadius(12)
                 
+                // [YENİ] Fotoğraf (Eğer varsa)
+                if let urlString = incident.imageUrl, let url = URL(string: urlString) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .empty:
+                            ProgressView()
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 200)
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 200)
+                                .clipped()
+                                .cornerRadius(12)
+                        case .failure:
+                            Image(systemName: "photo")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(height: 100)
+                                .foregroundColor(.gray)
+                        @unknown default:
+                            EmptyView()
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+                
                 // Başlık ve Durum
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
@@ -132,9 +161,12 @@ struct IncidentDetailView: View {
                     } else {
                         // User: Takip Et
                         Button(action: {
-                            if var currentUser = authManager.currentUser {
-                                manager.toggleFollow(for: incident, user: &currentUser)
-                                authManager.currentUser = currentUser
+                            if let currentUser = authManager.currentUser {
+                                manager.toggleFollow(for: incident, user: currentUser) { error in
+                                    if let error = error {
+                                        print("Error toggling follow: \(error)")
+                                    }
+                                }
                             }
                         }) {
                             HStack {

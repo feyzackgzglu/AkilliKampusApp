@@ -5,19 +5,18 @@ import MapKit
 struct ReportIncidentView: View {
     @ObservedObject var manager: IncidentManager
     @ObservedObject var authManager: AuthManager
-    
-    // Konum Yöneticisi
-    @StateObject var locationManager = LocationManager()
+    @ObservedObject var locationManager: LocationManager
     
     @State private var title = ""
     @State private var description = ""
     @State private var selectedType: IncidentType = .technical
     @State private var showAlert = false
+    @State private var attachPhoto = false
     
     // Harita Bölgesi (Varsayılan: Kampüs Merkezi)
     @State private var region = MKCoordinateRegion(
-        center: CLLocationCoordinate2D(latitude: 41.0082, longitude: 28.9784),
-        span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
+        center: CLLocationCoordinate2D(latitude: 39.9013, longitude: 41.2482),
+        span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
     )
     
     // Kullanıcı haritayı hareket ettirdi mi?
@@ -39,12 +38,25 @@ struct ReportIncidentView: View {
                     TextEditor(text: $description).frame(height: 100)
                 }
                 
+                Section(header: Text("Fotoğraf (Opsiyonel)")) {
+                    Toggle("Fotoğraf Ekle", isOn: $attachPhoto)
+                    if attachPhoto {
+                        HStack {
+                            Image(systemName: "photo.fill")
+                                .foregroundColor(.gray)
+                            Text("Simüle Edilen Fotoğraf Seçildi")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                
                 Section(header: Text("Konum Seçimi")) {
                     ZStack(alignment: .center) {
                         Map(coordinateRegion: $region, showsUserLocation: true)
                             .frame(height: 250)
                             .cornerRadius(12)
-                            .gesture(
+                            .simultaneousGesture(
                                 DragGesture().onChanged { _ in
                                     userHasMovedMap = true
                                 }
@@ -54,8 +66,9 @@ struct ReportIncidentView: View {
                         Image(systemName: "mappin")
                             .font(.title)
                             .foregroundColor(.red)
-                            .padding(.bottom, 20) // Pinin ucu merkeze gelsin diye
+                            .padding(.bottom, 20)
                             .shadow(radius: 2)
+                            .allowsHitTesting(false)
                         
                         // "Şu Anki Konumuma Git" Butonu
                         VStack {
@@ -63,10 +76,12 @@ struct ReportIncidentView: View {
                             HStack {
                                 Spacer()
                                 Button(action: {
-                                    if let userLoc = locationManager.userLocation {
+                                    if locationManager.authorizationStatus == .notDetermined {
+                                        locationManager.requestPermission()
+                                    } else if let userLoc = locationManager.userLocation {
                                         withAnimation {
                                             region.center = userLoc
-                                            userHasMovedMap = false // Tekrar oto konuma döndü
+                                            userHasMovedMap = false
                                         }
                                     }
                                 }) {
@@ -80,12 +95,28 @@ struct ReportIncidentView: View {
                             }
                         }
                     }
-                    .listRowInsets(EdgeInsets()) // Kenar boşluklarını kaldır
+                    .listRowInsets(EdgeInsets())
                     
-                    Text(userHasMovedMap ? "İşaretlenen Konum Seçilecek" : "Anlık Konumunuz Kullanılıyor")
-                        .font(.caption)
-                        .foregroundColor(userHasMovedMap ? .orange : .green)
-                        .frame(maxWidth: .infinity, alignment: .center)
+                    VStack(alignment: .center, spacing: 4) {
+                        if locationManager.authorizationStatus == .denied {
+                            Text("Konum İzni Reddedildi. Ayarlardan açmalısınız.")
+                                .foregroundColor(.red)
+                        } else if locationManager.authorizationStatus == .notDetermined {
+                            Button("Konum İzni Ver") {
+                                locationManager.requestPermission()
+                            }
+                            .foregroundColor(.blue)
+                        } else if locationManager.userLocation == nil {
+                            Text("Konumunuz alınıyor...")
+                                .foregroundColor(.gray)
+                        } else {
+                            Text(userHasMovedMap ? "İşaretlenen Konum Seçilecek" : "Anlık Konumunuz Kullanılıyor")
+                                .foregroundColor(userHasMovedMap ? .orange : .green)
+                        }
+                    }
+                    .font(.caption)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, 4)
                 }
                 
                 Section {
@@ -100,15 +131,17 @@ struct ReportIncidentView: View {
             }
             .navigationTitle("Bildirim Oluştur")
             .alert(isPresented: $showAlert) {
-                Alert(title: Text("Başarılı"), message: Text("Bildiriniz işaretlediğiniz konumda oluşturuldu."), dismissButton: .default(Text("Tamam")))
+                Alert(title: Text("Başarılı"), message: Text("Bildiriniz şu konumda oluşturuldu: \(lastSubmittedCoords)"), dismissButton: .default(Text("Tamam")))
             }
             .onAppear {
-                // İlk açılışta konum izni varsa oraya odaklan (eğer kullanıcı henüz manual hareket ettirmediyse)
+                if locationManager.authorizationStatus == .notDetermined {
+                    locationManager.requestPermission()
+                }
+                
                 if !userHasMovedMap, let userLoc = locationManager.userLocation {
                     region.center = userLoc
                 }
             }
-            // Konum güncellenince haritayı oraya taşı (sadece ilk başta)
             .onReceive(locationManager.$userLocation) { newLoc in
                 if !userHasMovedMap, let newLoc = newLoc {
                     withAnimation {
@@ -119,17 +152,29 @@ struct ReportIncidentView: View {
         }
     }
     
+    @State private var lastSubmittedCoords = ""
+
     private func submitReport() {
         guard let user = authManager.currentUser, !title.isEmpty else { return }
         
-        // Seçilen konum haritanın tam merkezi
         let selectedLocation = region.center
+        lastSubmittedCoords = String(format: "%.4f, %.4f", selectedLocation.latitude, selectedLocation.longitude)
         
-        manager.addIncident(type: selectedType, title: title, description: description, location: selectedLocation, user: user)
+        let mockImageUrl = attachPhoto ? "https://picsum.photos/seed/\(UUID().uuidString)/600/400" : nil
         
-        // Reset steps
+        manager.addIncident(
+            type: selectedType,
+            title: title,
+            description: description,
+            location: selectedLocation,
+            user: user,
+            imageUrl: mockImageUrl
+        )
+        
         title = ""
         description = ""
+        attachPhoto = false
+        userHasMovedMap = false
         showAlert = true
     }
 }
