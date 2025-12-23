@@ -1,6 +1,7 @@
 import SwiftUI
 import CoreLocation
 import MapKit
+import PhotosUI
 
 struct ReportIncidentView: View {
     @ObservedObject var manager: IncidentManager
@@ -11,7 +12,13 @@ struct ReportIncidentView: View {
     @State private var description = ""
     @State private var selectedType: IncidentType = .technical
     @State private var showAlert = false
-    @State private var attachPhoto = false
+    @State private var errorAlert = false
+    @State private var errorMessage = ""
+    
+    // [YENİ] Fotoğraf Seçimi State'leri
+    @State private var selectedItem: PhotosPickerItem? = nil
+    @State private var selectedImageData: Data? = nil
+    @State private var isUploading = false
     
     // Harita Bölgesi (Varsayılan: Kampüs Merkezi)
     @State private var region = MKCoordinateRegion(
@@ -39,15 +46,35 @@ struct ReportIncidentView: View {
                 }
                 
                 Section(header: Text("Fotoğraf (Opsiyonel)")) {
-                    Toggle("Fotoğraf Ekle", isOn: $attachPhoto)
-                    if attachPhoto {
+                    PhotosPicker(selection: $selectedItem, matching: .images) {
                         HStack {
-                            Image(systemName: "photo.fill")
-                                .foregroundColor(.gray)
-                            Text("Simüle Edilen Fotoğraf Seçildi")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                            Image(systemName: "photo.badge.plus")
+                            Text(selectedImageData == nil ? "Fotoğraf Seç" : "Fotoğrafı Değiştir")
                         }
+                    }
+                    .onChange(of: selectedItem) { newItem in
+                        Task {
+                            if let data = try? await newItem?.loadTransferable(type: Data.self) {
+                                selectedImageData = data
+                            }
+                        }
+                    }
+                    
+                    if let data = selectedImageData, let uiImage = UIImage(data: data) {
+                        VStack {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 200)
+                                .cornerRadius(8)
+                            
+                            Button("Fotoğrafı Kaldır", role: .destructive) {
+                                selectedImageData = nil
+                                selectedItem = nil
+                            }
+                            .font(.caption)
+                        }
+                        .padding(.vertical, 5)
                     }
                 }
                 
@@ -121,17 +148,26 @@ struct ReportIncidentView: View {
                 
                 Section {
                     Button(action: submitReport) {
-                        Text("Bildirimi Gönder")
-                            .frame(maxWidth: .infinity)
-                            .bold()
-                            .foregroundColor(.white)
+                        if isUploading {
+                            ProgressView("Yükleniyor...")
+                                .frame(maxWidth: .infinity)
+                        } else {
+                            Text("Bildirimi Gönder")
+                                .frame(maxWidth: .infinity)
+                                .bold()
+                                .foregroundColor(.white)
+                        }
                     }
-                    .listRowBackground(Color.blue)
+                    .listRowBackground(isUploading ? Color.gray : Color.blue)
+                    .disabled(isUploading || title.isEmpty)
                 }
             }
             .navigationTitle("Bildirim Oluştur")
             .alert(isPresented: $showAlert) {
                 Alert(title: Text("Başarılı"), message: Text("Bildiriniz şu konumda oluşturuldu: \(lastSubmittedCoords)"), dismissButton: .default(Text("Tamam")))
+            }
+            .alert(isPresented: $errorAlert) {
+                Alert(title: Text("Hata"), message: Text(errorMessage), dismissButton: .default(Text("Tamam")))
             }
             .onAppear {
                 if locationManager.authorizationStatus == .notDetermined {
@@ -157,24 +193,51 @@ struct ReportIncidentView: View {
     private func submitReport() {
         guard let user = authManager.currentUser, !title.isEmpty else { return }
         
+        isUploading = true
         let selectedLocation = region.center
         lastSubmittedCoords = String(format: "%.4f, %.4f", selectedLocation.latitude, selectedLocation.longitude)
         
-        let mockImageUrl = attachPhoto ? "https://picsum.photos/seed/\(UUID().uuidString)/600/400" : nil
-        
+        if let data = selectedImageData, let uiImage = UIImage(data: data) {
+            // Fotoğrafı oldukça küçültelim ki Firestore limitine takılmasın (Max 1MB)
+            // 0.1 kalite ve düşük çözünürlük ile Base64'e çevirelim
+            let compressedData = uiImage.jpegData(compressionQuality: 0.2)
+            if let base64String = compressedData?.base64EncodedString() {
+                let base64URL = "base64:\(base64String)"
+                self.finalizeSubmission(user: user, location: selectedLocation, imageUrl: base64URL)
+            } else {
+                self.finalizeSubmission(user: user, location: selectedLocation, imageUrl: nil)
+            }
+        } else {
+            // Fotoğraf yoksa direkt kaydet
+            finalizeSubmission(user: user, location: selectedLocation, imageUrl: nil)
+        }
+    }
+    
+    private func finalizeSubmission(user: User, location: CLLocationCoordinate2D, imageUrl: String?) {
         manager.addIncident(
             type: selectedType,
             title: title,
             description: description,
-            location: selectedLocation,
+            location: location,
             user: user,
-            imageUrl: mockImageUrl
-        )
-        
-        title = ""
-        description = ""
-        attachPhoto = false
-        userHasMovedMap = false
-        showAlert = true
+            imageUrl: imageUrl
+        ) { error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    self.errorMessage = "Bildirim kaydedilemedi: \(error.localizedDescription)"
+                    self.isUploading = false
+                    self.errorAlert = true
+                } else {
+                    // Başarılı
+                    title = ""
+                    description = ""
+                    selectedImageData = nil
+                    selectedItem = nil
+                    userHasMovedMap = false
+                    isUploading = false
+                    showAlert = true
+                }
+            }
+        }
     }
 }

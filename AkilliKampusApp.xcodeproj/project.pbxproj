@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		69D5BF522EFAE80E00B30B6B /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 69D5BF512EFAE80E00B30B6B /* FirebaseStorage */; };
 		69D7F9FC2EF44A6A004C1D91 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 69D7F9FB2EF44A6A004C1D91 /* FirebaseAnalytics */; };
 		69D7FA022EF44DF5004C1D91 /* FirebaseAnalyticsIdentitySupport in Frameworks */ = {isa = PBXBuildFile; productRef = 69D7FA012EF44DF5004C1D91 /* FirebaseAnalyticsIdentitySupport */; };
 		69D7FA132EF44E84004C1D91 /* AkilliKapmusApp.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = 69D7FA072EF44E84004C1D91 /* AkilliKapmusApp.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -125,6 +126,7 @@
 				69D7FA022EF44DF5004C1D91 /* FirebaseAnalyticsIdentitySupport in Frameworks */,
 				69D7FA1C2EF44F5F004C1D91 /* FirebaseFirestore in Frameworks */,
 				69D7FA602EF456BC004C1D91 /* GoogleSignInSwift in Frameworks */,
+				69D5BF522EFAE80E00B30B6B /* FirebaseStorage in Frameworks */,
 				69D7FA1A2EF44F5F004C1D91 /* FirebaseAuth in Frameworks */,
 				69D7F9FC2EF44A6A004C1D91 /* FirebaseAnalytics in Frameworks */,
 			);
@@ -147,6 +149,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		69D5BF502EFAE80E00B30B6B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		69F127882EE312D5001671B5 = {
 			isa = PBXGroup;
 			children = (
@@ -156,6 +165,7 @@
 				69D7FA082EF44E84004C1D91 /* AkilliKapmusApp */,
 				69F127922EE312D5001671B5 /* Products */,
 				69D7FA632EF459CF004C1D91 /* GoogleService-Info2.plist */,
+				69D5BF502EFAE80E00B30B6B /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -220,6 +230,7 @@
 				69D7FA1B2EF44F5F004C1D91 /* FirebaseFirestore */,
 				69D7FA5D2EF456BC004C1D91 /* GoogleSignIn */,
 				69D7FA5F2EF456BC004C1D91 /* GoogleSignInSwift */,
+				69D5BF512EFAE80E00B30B6B /* FirebaseStorage */,
 			);
 			productName = AkilliKampusApp;
 			productReference = 69F127912EE312D5001671B5 /* AkilliKampusApp.app */;
@@ -776,6 +787,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		69D5BF512EFAE80E00B30B6B /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 69D7F9FA2EF448C9004C1D91 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
 		69D7F9FB2EF44A6A004C1D91 /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 69D7F9FA2EF448C9004C1D91 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;

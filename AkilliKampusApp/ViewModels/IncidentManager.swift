@@ -157,7 +157,8 @@ class IncidentManager: ObservableObject {
         }
     }
     
-    func addIncident(type: IncidentType, title: String, description: String, location: CLLocationCoordinate2D, user: User, imageUrl: String? = nil) {
+    
+    func addIncident(type: IncidentType, title: String, description: String, location: CLLocationCoordinate2D, user: User, imageUrl: String? = nil, completion: @escaping (Error?) -> Void = { _ in }) {
         let id = UUID()
         let incidentData: [String: Any] = [
             "type": type.rawValue,
@@ -175,6 +176,7 @@ class IncidentManager: ObservableObject {
             if let error = error {
                 print("Error adding incident: \(error)")
             }
+            completion(error)
         }
     }
     
