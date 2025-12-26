@@ -56,7 +56,7 @@ struct Incident: Identifiable, Codable {
     let latitude: Double
     let longitude: Double
     let reporterId: String
-    var imageUrl: String? = nil // Opsiyonel fotoğraf URL
+    var imageUrl: String? = nil //Opsiyonel fotoğraf URL
     
     var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
