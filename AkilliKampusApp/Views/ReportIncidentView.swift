@@ -164,7 +164,11 @@ struct ReportIncidentView: View {
             }
             .navigationTitle("Bildirim Oluştur")
             .alert(isPresented: $showAlert) {
-                Alert(title: Text("Başarılı"), message: Text("Bildiriniz şu konumda oluşturuldu: \(lastSubmittedCoords)"), dismissButton: .default(Text("Tamam")))
+                Alert(
+                    title: Text("Tebrikler!"),
+                    message: Text("Bildiriminiz başarıyla oluşturuldu. Kampüs topluluğu bu durumdan haberdar edildi."),
+                    dismissButton: .default(Text("Tamam"))
+                )
             }
             .alert(isPresented: $errorAlert) {
                 Alert(title: Text("Hata"), message: Text(errorMessage), dismissButton: .default(Text("Tamam")))

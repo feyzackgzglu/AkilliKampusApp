@@ -35,7 +35,7 @@ class AuthManager: ObservableObject {
         
         GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { [weak self] result, error in
             guard error == nil else {
-                self?.authError = error?.localizedDescription
+                self?.authError = self?.translateError(error!)
                 return
             }
             
@@ -49,7 +49,7 @@ class AuthManager: ObservableObject {
             
             Auth.auth().signIn(with: credential) { [weak self] result, error in
                 if let error = error {
-                    self?.authError = error.localizedDescription
+                    self?.authError = self?.translateError(error)
                     return
                 }
                 
@@ -112,7 +112,7 @@ class AuthManager: ObservableObject {
 
         Auth.auth().signIn(withEmail: email, password: password) { [weak self] result, error in
             if let error = error {
-                self?.authError = error.localizedDescription
+                self?.authError = self?.translateError(error)
                 return
             }
             self?.authError = nil
@@ -141,7 +141,7 @@ class AuthManager: ObservableObject {
         
         Auth.auth().createUser(withEmail: email, password: password) { [weak self] result, error in
             if let error = error {
-                self?.authError = error.localizedDescription
+                self?.authError = self?.translateError(error)
                 return
             }
             
@@ -254,5 +254,37 @@ class AuthManager: ObservableObject {
                 self?.isAuthenticated = true
             }
         }
+    }
+    
+    // MARK: - Helper Functions
+    
+    private func translateError(_ error: Error) -> String {
+        let errorCode = (error as NSError).code
+        
+        // Firebase Auth Error Codes
+        if let authErrorCode = AuthErrorCode(rawValue: errorCode) {
+            switch authErrorCode {
+            case .invalidEmail, .userNotFound, .invalidCredential:
+                return "Mailiniz veya şifreniz hatalı."
+            case .wrongPassword:
+                return "Şifre hatası."
+            case .userDisabled:
+                return "Bu kullanıcı hesabı devre dışı bırakılmış."
+            case .emailAlreadyInUse:
+                return "Bu e-posta adresi zaten başka bir hesap tarafından kullanılıyor."
+            case .networkError:
+                return "Ağ hatası oluştu. Lütfen internet bağlantınızı kontrol edin."
+            case .weakPassword:
+                return "Şifre çok zayıf. Lütfen daha güçlü bir şifre seçin."
+            case .internalError:
+                return "Sunucu hatası oluştu. Lütfen daha sonra tekrar deneyin."
+            case .tooManyRequests:
+                return "Çok fazla deneme yaptınız. Lütfen daha sonra tekrar deneyin."
+            default:
+                return "Bir hata oluştu: \(error.localizedDescription)"
+            }
+        }
+        
+        return error.localizedDescription
     }
 }

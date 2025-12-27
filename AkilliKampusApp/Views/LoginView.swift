@@ -24,16 +24,29 @@ struct LoginView: View {
                 TextField("E-posta Adresi", text: $email)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .autocapitalization(.none)
+                    .onChange(of: email) { _ in authManager.authError = nil }
                 
                 SecureField("Şifre", text: $password)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .onChange(of: password) { _ in authManager.authError = nil }
             }
             .padding(.horizontal)
             
             if let error = authManager.authError {
-                Text(error)
-                    .foregroundColor(.red)
-                    .font(.caption)
+                HStack {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                    Text(error)
+                }
+                .foregroundColor(.red)
+                .font(.caption)
+                .padding(10)
+                .background(Color.red.opacity(0.1))
+                .cornerRadius(8)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.red.opacity(0.3), lineWidth: 1)
+                )
+                .padding(.horizontal)
             }
             
             Button(action: {

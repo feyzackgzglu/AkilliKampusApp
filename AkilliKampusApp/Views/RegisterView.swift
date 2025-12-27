@@ -14,14 +14,18 @@ struct RegisterView: View {
             Form {
                 Section(header: Text("Kişisel Bilgiler")) {
                     TextField("Ad Soyad", text: $name)
+                        .onChange(of: name) { _ in authManager.authError = nil }
                     TextField("feyza@ogr.atauni.edu.tr", text: $email)
                         .autocapitalization(.none)
                         .keyboardType(.emailAddress)
+                        .onChange(of: email) { _ in authManager.authError = nil }
                     TextField("Birim / Bölüm", text: $department)
+                        .onChange(of: department) { _ in authManager.authError = nil }
                 }
                 
                 Section(header: Text("Güvenlik")) {
                     SecureField("Şifre", text: $password)
+                        .onChange(of: password) { _ in authManager.authError = nil }
                 }
                 
                 Section {
