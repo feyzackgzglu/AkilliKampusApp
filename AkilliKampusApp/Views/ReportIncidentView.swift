@@ -11,9 +11,9 @@ struct ReportIncidentView: View {
     @State private var title = ""
     @State private var description = ""
     @State private var selectedType: IncidentType = .technical
-    @State private var showAlert = false
-    @State private var errorAlert = false
-    @State private var errorMessage = ""
+    @State private var alertTitle = ""
+    @State private var alertMessage = ""
+    @State private var showUnifiedAlert = false
     
     // [YENİ] Fotoğraf Seçimi State'leri
     @State private var selectedItem: PhotosPickerItem? = nil
@@ -22,8 +22,8 @@ struct ReportIncidentView: View {
     
     // Harita Bölgesi (Varsayılan: Kampüs Merkezi)
     @State private var region = MKCoordinateRegion(
-        center: CLLocationCoordinate2D(latitude: 39.9013, longitude: 41.2482),
-        span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+        center: CLLocationCoordinate2D(latitude: 39.90163, longitude: 41.24422),
+        span: MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
     )
     
     // Kullanıcı haritayı hareket ettirdi mi?
@@ -77,7 +77,6 @@ struct ReportIncidentView: View {
                         .padding(.vertical, 5)
                     }
                 }
-                
                 Section(header: Text("Konum Seçimi")) {
                     ZStack(alignment: .center) {
                         Map(coordinateRegion: $region, showsUserLocation: true)
@@ -163,31 +162,20 @@ struct ReportIncidentView: View {
                 }
             }
             .navigationTitle("Bildirim Oluştur")
-            .alert(isPresented: $showAlert) {
+            .alert(isPresented: $showUnifiedAlert) {
                 Alert(
-                    title: Text("Tebrikler!"),
-                    message: Text("Bildiriminiz başarıyla oluşturuldu. Kampüs topluluğu bu durumdan haberdar edildi."),
+                    title: Text(alertTitle),
+                    message: Text(alertMessage),
                     dismissButton: .default(Text("Tamam"))
                 )
-            }
-            .alert(isPresented: $errorAlert) {
-                Alert(title: Text("Hata"), message: Text(errorMessage), dismissButton: .default(Text("Tamam")))
             }
             .onAppear {
                 if locationManager.authorizationStatus == .notDetermined {
                     locationManager.requestPermission()
                 }
-                
-                if !userHasMovedMap, let userLoc = locationManager.userLocation {
-                    region.center = userLoc
-                }
             }
-            .onReceive(locationManager.$userLocation) { newLoc in
-                if !userHasMovedMap, let newLoc = newLoc {
-                    withAnimation {
-                        region.center = newLoc
-                    }
-                }
+            .onReceive(locationManager.$userLocation) { _ in
+                // Otomatik odaklama devre dışı bırakıldı.
             }
         }
     }
@@ -199,22 +187,38 @@ struct ReportIncidentView: View {
         
         isUploading = true
         let selectedLocation = region.center
-        lastSubmittedCoords = String(format: "%.4f, %.4f", selectedLocation.latitude, selectedLocation.longitude)
         
         if let data = selectedImageData, let uiImage = UIImage(data: data) {
-            // Fotoğrafı oldukça küçültelim ki Firestore limitine takılmasın (Max 1MB)
-            // 0.1 kalite ve düşük çözünürlük ile Base64'e çevirelim
-            let compressedData = uiImage.jpegData(compressionQuality: 0.2)
-            if let base64String = compressedData?.base64EncodedString() {
-                let base64URL = "base64:\(base64String)"
-                self.finalizeSubmission(user: user, location: selectedLocation, imageUrl: base64URL)
-            } else {
-                self.finalizeSubmission(user: user, location: selectedLocation, imageUrl: nil)
+            // Arka planda resmi küçültüp öyle gönderelim (Hız için)
+            DispatchQueue.global(qos: .userInitiated).async {
+                let resizedImage = self.resizeImage(image: uiImage, targetSize: CGSize(width: 800, height: 800))
+                let compressedData = resizedImage.jpegData(compressionQuality: 0.5)
+                let base64String = compressedData?.base64EncodedString()
+                let base64URL = base64String != nil ? "base64:\(base64String!)" : nil
+                
+                DispatchQueue.main.async {
+                    self.finalizeSubmission(user: user, location: selectedLocation, imageUrl: base64URL)
+                }
             }
         } else {
-            // Fotoğraf yoksa direkt kaydet
             finalizeSubmission(user: user, location: selectedLocation, imageUrl: nil)
         }
+    }
+    
+    private func resizeImage(image: UIImage, targetSize: CGSize) -> UIImage {
+        let size = image.size
+        let widthRatio  = targetSize.width  / size.width
+        let heightRatio = targetSize.height / size.height
+        let newSize = widthRatio > heightRatio ? 
+            CGSize(width: size.width * heightRatio, height: size.height * heightRatio) :
+            CGSize(width: size.width * widthRatio,  height: size.height * widthRatio)
+        
+        let rect = CGRect(x: 0, y: 0, width: newSize.width, height: newSize.height)
+        UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
+        image.draw(in: rect)
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return newImage ?? image
     }
     
     private func finalizeSubmission(user: User, location: CLLocationCoordinate2D, imageUrl: String?) {
@@ -228,18 +232,23 @@ struct ReportIncidentView: View {
         ) { error in
             DispatchQueue.main.async {
                 if let error = error {
-                    self.errorMessage = "Bildirim kaydedilemedi: \(error.localizedDescription)"
+                    self.alertTitle = "Hata"
+                    self.alertMessage = "Bildirim kaydedilemedi: \(error.localizedDescription)"
                     self.isUploading = false
-                    self.errorAlert = true
+                    self.showUnifiedAlert = true
+                    UINotificationFeedbackGenerator().notificationOccurred(.error)
                 } else {
-                    // Başarılı
+                    self.alertTitle = "Tebrikler!"
+                    self.alertMessage = "Bildiriminiz başarıyla oluşturuldu. Kampüs topluluğu bu durumdan haberdar edildi."
+                    
                     title = ""
                     description = ""
                     selectedImageData = nil
                     selectedItem = nil
                     userHasMovedMap = false
                     isUploading = false
-                    showAlert = true
+                    self.showUnifiedAlert = true
+                    UINotificationFeedbackGenerator().notificationOccurred(.success)
                 }
             }
         }

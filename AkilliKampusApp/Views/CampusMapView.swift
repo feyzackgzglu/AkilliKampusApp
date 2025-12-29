@@ -7,18 +7,23 @@ struct CampusMapView: View {
     @ObservedObject var locationManager: LocationManager
     
     @State private var region = MKCoordinateRegion(
-        center: CLLocationCoordinate2D(latitude: 39.9013, longitude: 41.2482),
-        span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+        center: CLLocationCoordinate2D(latitude: 39.90163, longitude: 41.24422),
+        span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
     )
     
     @State private var selectedIncident: Incident? = nil
+    @State private var hasCenteredOnUser = false
     
     var body: some View {
         NavigationView {
             ZStack(alignment: .bottom) {
                 Map(coordinateRegion: $region, showsUserLocation: true, annotationItems: manager.incidents) { incident in
                     MapAnnotation(coordinate: incident.coordinate) {
-                        Button(action: { selectedIncident = incident }) {
+                        Button(action: {
+                            withAnimation(.spring()) {
+                                selectedIncident = incident
+                            }
+                        }) {
                             VStack {
                                 Image(systemName: incident.type.iconName)
                                     .resizable()
@@ -35,7 +40,7 @@ struct CampusMapView: View {
                 }
                 .edgesIgnoringSafeArea(.top)
                 
-                // Sağ alt köşeye "Konumuma Git" butonu ekle
+                // sağ alt köşedeki "Konumuma Git" butonu
                 VStack {
                     Spacer()
                     HStack {
@@ -56,62 +61,69 @@ struct CampusMapView: View {
                                 .shadow(radius: 4)
                         }
                         .padding()
-                        .padding(.bottom, selectedIncident != nil ? 140 : 20) // Detay kartı varsa yukarı kaydır
+                        .padding(.bottom, selectedIncident != nil ? 140 : 20) // detay kartı varsa yukarı kaydır
                     }
                 }
-            }
-            .navigationBarHidden(true)
-            .onAppear {
-                if let userLoc = locationManager.userLocation {
-                    region.center = userLoc
-                }
-            }
-            .onReceive(locationManager.$userLocation) { newLocation in
-                // Uygulama ilk açıldığında veya konum ilk geldiğinde oraya odaklan
-                if let newLoc = newLocation {
-                    withAnimation {
-                        region.center = newLoc
-                    }
-                }
-            }
-                
+
+                // [FIX] Kartı ZStack içine taşıyoruz ki harita üzerinde gözüksün
                 if let incident = selectedIncident {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
                             Image(systemName: incident.type.iconName).foregroundColor(incident.type.color)
                             Text(incident.type.rawValue).font(.caption).fontWeight(.bold).foregroundColor(.gray)
                             Spacer()
-                            Button(action: { selectedIncident = nil }) {
-                                 Image(systemName: "xmark.circle.fill").foregroundColor(.gray)
+                            Button(action: {
+                                withAnimation {
+                                    selectedIncident = nil
+                                }
+                            }) {
+                                Image(systemName: "xmark.circle.fill").foregroundColor(.gray)
                             }
                         }
                         Text(incident.title).font(.headline)
                         Text(incident.description).font(.caption).lineLimit(1).foregroundColor(.secondary)
                         
                         HStack {
-                            Text(incident.dateReported, style: .time)
+                            Text(incident.lastUpdated, style: .relative)
+                                .font(.caption2)
+                                .foregroundColor(.gray)
+                            Text("önce")
+                                .font(.caption2)
+                                .foregroundColor(.gray)
+                            
                             Spacer()
+                            
                             NavigationLink(destination: IncidentDetailView(incident: incident, manager: manager, authManager: authManager)) {
                                 Text("Detayı Gör")
                                     .font(.caption)
                                     .fontWeight(.bold)
-                                    .padding(.vertical, 4)
-                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .padding(.horizontal, 12)
                                     .background(Color.blue)
                                     .foregroundColor(.white)
                                     .cornerRadius(8)
                             }
                         }
                     }
-                    .padding()
-                    .background(Color.white)
-                    .cornerRadius(15)
-                    .shadow(radius: 10)
-                    .padding()
-                    .transition(.move(edge: .bottom))
+                    .padding(12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 15)
+                            .fill(Color.white)
+                            .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 5)
+                    )
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 20)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
-            .navigationBarHidden(true)
+            .onAppear {
+                // Sadece izin kontrolü gerekirse burada kalabilir, 
+                // ancak otomatik odaklama kaldırıldı.
+            }
+            .onReceive(locationManager.$userLocation) { _ in
+                // Otomatik odaklama devre dışı bırakıldı.
+            }
         }
+        .navigationBarHidden(true)
     }
-
+}

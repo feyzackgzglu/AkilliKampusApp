@@ -8,7 +8,7 @@ class AuthManager: ObservableObject {
     @Published var isAuthenticated = false
     @Published var authError: String?
     
-    // Kampüs domain kısıtlamaları (Atatürk Üniversitesi)
+    // kampüs domain kısıtlamaları (Atatürk Üniversitesi)
     private let allowedDomains = ["atauni.edu.tr", "ogr.atauni.edu.tr"]
     private var db = Firestore.firestore()
     private var authStateListenerHandle: AuthStateDidChangeListenerHandle?
@@ -20,7 +20,7 @@ class AuthManager: ObservableObject {
     
     deinit {
         if let handle = authStateListenerHandle {
-            Auth.auth().removeStateDidChangeListener(handle)
+            FirebaseAuth.Auth.auth().removeStateDidChangeListener(handle)
         }
         userListenerRegistration?.remove()
     }
@@ -47,13 +47,13 @@ class AuthManager: ObservableObject {
             let credential = GoogleAuthProvider.credential(withIDToken: idToken,
                                                            accessToken: user.accessToken.tokenString)
             
-            Auth.auth().signIn(with: credential) { [weak self] result, error in
+            FirebaseAuth.Auth.auth().signIn(with: credential) { [weak self] result, error in
                 if let error = error {
                     self?.authError = self?.translateError(error)
                     return
                 }
                 
-                // Firestore'a kaydet (eğer ilk kez giriyorsa)
+                // firestore'a kaydet (eğer ilk kez giriyorsa)
                 if let firebaseUser = result?.user {
                     self?.checkAndCreateGoogleUser(firebaseUser: firebaseUser, googleUser: user)
                 }
@@ -67,7 +67,7 @@ class AuthManager: ObservableObject {
         
         db.collection("users").document(uid).getDocument { [weak self] snapshot, error in
             if !((snapshot?.exists) ?? false) {
-                // Yeni kullanıcı, kaydet
+                // yeni kullanıcı kaydet
                 let name = googleUser.profile?.name ?? "Google User"
                 let email = googleUser.profile?.email ?? ""
                 
@@ -75,7 +75,7 @@ class AuthManager: ObservableObject {
                     id: uid,
                     name: name,
                     email: email,
-                    department: "Bilinmiyor", // Google'dan gelmez, kullanıcı güncelleyebilir
+                    department: "Bilinmiyor",
                     role: .user,
                     followedIncidentIds: []
                 )
@@ -85,12 +85,10 @@ class AuthManager: ObservableObject {
     }
     
     private func startAuthListener() {
-        authStateListenerHandle = Auth.auth().addStateDidChangeListener { [weak self] _, authUser in
+        authStateListenerHandle = FirebaseAuth.Auth.auth().addStateDidChangeListener { [weak self] _, authUser in
             if let authUser = authUser {
-                // Kullanıcı giriş yapmış, Firestore'dan detayları çek
                 self?.startListeningForUser(uid: authUser.uid)
             } else {
-                // Çıkış yapmış
                 self?.currentUser = nil
                 self?.isAuthenticated = false
                 self?.userListenerRegistration?.remove()
@@ -99,7 +97,7 @@ class AuthManager: ObservableObject {
         }
     }
     
-    // Login
+    // login
     func login(email: String, password: String) {
         if email.isEmpty || password.isEmpty {
             authError = "Lütfen e-posta ve şifrenizi giriniz."
@@ -107,27 +105,26 @@ class AuthManager: ObservableObject {
         }
         
         // Admin kontrolü (Opsiyonel: Eğer admin paneli girişi farklıysa burası kalabilir, 
-        // ancak Firebase kullanıyorsak admin hesabı da Firebase'de olmalı. 
-        // Şimdilik admin hardcode'unu kaldırdım, Firebase'de 'admin@kampus.edu.tr' açılabilir.)
+        // ancak Firebase kullanıyorsak admin hesabı da Firebase'de olmalı.
 
-        Auth.auth().signIn(withEmail: email, password: password) { [weak self] result, error in
+        FirebaseAuth.Auth.auth().signIn(withEmail: email, password: password) { [weak self] result, error in
             if let error = error {
                 self?.authError = self?.translateError(error)
                 return
             }
             self?.authError = nil
-            // Listener durumu güncelleyecek
         }
     }
     
-    // Register
+    
+    // register
     func register(name: String, email: String, department: String, password: String) {
         if name.isEmpty || email.isEmpty || password.isEmpty {
             authError = "Lütfen tüm alanları doldurun."
             return
         }
         
-        // Domain kontrolü
+        // domain kontrolü
         let hasValidDomain = allowedDomains.contains { email.lowercased().hasSuffix("@" + $0) }
         if !hasValidDomain {
             authError = "Kayıt olmak için üniversite e-postası (@atauni.edu.tr veya @ogr.atauni.edu.tr) gereklidir."
@@ -139,7 +136,7 @@ class AuthManager: ObservableObject {
             return
         }
         
-        Auth.auth().createUser(withEmail: email, password: password) { [weak self] result, error in
+        FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password) { [weak self] result, error in
             if let error = error {
                 self?.authError = self?.translateError(error)
                 return
@@ -167,7 +164,7 @@ class AuthManager: ObservableObject {
     
     func logout() {
         do {
-            try Auth.auth().signOut()
+            try FirebaseAuth.Auth.auth().signOut()
             authError = nil
         } catch {
             authError = "Çıkış yapılırken hata oluştu: \(error.localizedDescription)"
@@ -212,6 +209,19 @@ class AuthManager: ObservableObject {
         db.collection("users").document(user.id).updateData([
             "notificationPreferences": user.notificationPreferences
         ])
+    }
+    
+    func updateProfile(name: String, department: String, completion: @escaping (Error?) -> Void) {
+        guard let user = currentUser else { return }
+        
+        let updateData: [String: Any] = [
+            "name": name,
+            "department": department
+        ]
+        
+        db.collection("users").document(user.id).updateData(updateData) { error in
+            completion(error)
+        }
     }
     
     private func startListeningForUser(uid: String) {
@@ -286,5 +296,12 @@ class AuthManager: ObservableObject {
         }
         
         return error.localizedDescription
+    }
+
+    // SIMULATION: Added at the end to force re-indexing
+    func processResetRequest(email: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            completion(.success(()))
+        }
     }
 }

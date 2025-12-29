@@ -33,7 +33,19 @@ struct IncidentDetailView: View {
                     center: incident.coordinate,
                     span: MKCoordinateSpan(latitudeDelta: 0.002, longitudeDelta: 0.002)
                 )), annotationItems: [incident]) { item in
-                    MapMarker(coordinate: item.coordinate, tint: item.type.color)
+                    MapAnnotation(coordinate: item.coordinate) {
+                        VStack {
+                            Image(systemName: item.type.iconName)
+                                .resizable()
+                                .scaledToFit()
+                                .foregroundColor(.white)
+                                .frame(width: 15, height: 15)
+                                .padding(6)
+                                .background(item.type.color)
+                                .clipShape(Circle())
+                                .shadow(radius: 4)
+                        }
+                    }
                 }
                 .frame(height: 200)
                 .cornerRadius(12)
@@ -96,6 +108,10 @@ struct IncidentDetailView: View {
                             .foregroundColor(selectedStatus.color)
                     }
                     Text(incident.title).font(.title).fontWeight(.bold)
+                    
+                    Text("Son Güncelleme: \(incident.lastUpdated, style: .time)")
+                        .font(.caption2)
+                        .foregroundColor(.gray)
                 }
                 .padding(.horizontal)
                 

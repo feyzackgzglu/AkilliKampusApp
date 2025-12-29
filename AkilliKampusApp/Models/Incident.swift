@@ -53,6 +53,7 @@ struct Incident: Identifiable, Codable {
     var description: String
     var status: IncidentStatus
     let dateReported: Date
+    var lastUpdated: Date
     let latitude: Double
     let longitude: Double
     let reporterId: String
@@ -61,4 +62,11 @@ struct Incident: Identifiable, Codable {
     var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
+}
+
+struct Broadcast: Identifiable, Codable {
+    var id: String { documentId }
+    let documentId: String
+    let message: String
+    let timestamp: Date
 }

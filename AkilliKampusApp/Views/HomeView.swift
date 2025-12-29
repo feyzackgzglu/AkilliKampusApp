@@ -5,7 +5,7 @@ struct HomeView: View {
     @ObservedObject var authManager: AuthManager
     @ObservedObject var locationManager: LocationManager
     
-    // FAB için Sheet State
+    // FAB için Sheet State Floating Action Button
     @State private var showReportSheet = false
     
     var body: some View {
@@ -52,9 +52,53 @@ struct HomeView: View {
                     
                     // Liste
                     List {
-                        ForEach(incidentManager.filteredIncidents(for: authManager.currentUser)) { incident in
-                            NavigationLink(destination: IncidentDetailView(incident: incident, manager: incidentManager, authManager: authManager)) {
-                                IncidentListRow(incident: incident)
+                        // [YENİ] Acil Duyuru Geçmişi
+                        if !incidentManager.recentBroadcasts.isEmpty {
+                            Section(header: Text("Son Duyurular").font(.caption).fontWeight(.bold).foregroundColor(.red)) {
+                                ForEach(incidentManager.recentBroadcasts) { broadcast in
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        HStack {
+                                            Image(systemName: "megaphone.fill")
+                                                .foregroundColor(.red)
+                                            Text(broadcast.timestamp, style: .time)
+                                                .font(.caption2)
+                                                .foregroundColor(.secondary)
+                                            Spacer()
+                                            Text(broadcast.timestamp, style: .date)
+                                                .font(.caption2)
+                                                .foregroundColor(.secondary)
+                                        }
+                                        
+                                        HStack {
+                                            Text(broadcast.message)
+                                                .font(.subheadline)
+                                                .fontWeight(.medium)
+                                                .foregroundColor(.primary)
+                                            
+                                            Spacer()
+                                            
+                                            if authManager.currentUser?.role == .admin {
+                                                Button(action: {
+                                                    incidentManager.deleteBroadcast(broadcastId: broadcast.documentId)
+                                                }) {
+                                                    Image(systemName: "trash")
+                                                        .font(.caption)
+                                                        .foregroundColor(.red.opacity(0.7))
+                                                        .padding(4)
+                                                }
+                                            }
+                                        }
+                                    }
+                                    .padding(.vertical, 8)
+                                }
+                            }
+                        }
+
+                        Section(header: Text("Bildirim Akışı").font(.caption).fontWeight(.bold).foregroundColor(.gray)) {
+                            ForEach(incidentManager.filteredIncidents(for: authManager.currentUser)) { incident in
+                                NavigationLink(destination: IncidentDetailView(incident: incident, manager: incidentManager, authManager: authManager)) {
+                                    IncidentListRow(incident: incident)
+                                }
                             }
                         }
                     }
@@ -125,7 +169,7 @@ struct IncidentListRow: View {
                         .font(.headline)
                         .lineLimit(1)
                     Spacer()
-                    Text(incident.dateReported, style: .time)
+                    Text(incident.lastUpdated, style: .time)
                         .font(.caption2)
                         .foregroundColor(.gray)
                 }

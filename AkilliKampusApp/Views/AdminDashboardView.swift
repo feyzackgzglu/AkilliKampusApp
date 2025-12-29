@@ -9,7 +9,7 @@ struct AdminDashboardView: View {
     var body: some View {
         NavigationView {
             List {
-                // Veri Yönetimi
+                // veri yönetimi
                 Section(header: Text("Veri Yönetimi")) {
                     Button(action: {
                         if let user = authManager.currentUser {
@@ -23,7 +23,7 @@ struct AdminDashboardView: View {
                     }
                 }
                 
-                // Acil Durum Modülü
+                // acil duruö kısmı
                 Section(header: Text("Acil Durum Yönetimi")) {
                     Button(action: {
                         showEmergencyAlert = true
@@ -42,7 +42,7 @@ struct AdminDashboardView: View {
                     }
                 }
                 
-                // Bildirim Yönetimi
+                // bildirim yönetimi
                 Section(header: Text("Tüm Bildirimler")) {
                     ForEach(manager.incidents) { incident in
                         NavigationLink(destination: IncidentDetailView(incident: incident, manager: manager, authManager: authManager)) {

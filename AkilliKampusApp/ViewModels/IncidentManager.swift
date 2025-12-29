@@ -6,14 +6,15 @@ import FirebaseFirestore
 class IncidentManager: ObservableObject {
     @Published var incidents: [Incident] = []
     
-    // Filtreleme State'leri
+    // filtreleme State'leri
     @Published var searchText: String = ""
     @Published var selectedFilterType: IncidentType? = nil
     @Published var showOnlyActive: Bool = false
     @Published var showOnlyFollowed: Bool = false
     
-    // [YENİ] Bildirim Sistemleri
+    // bildirim sistemleri ama yeni
     @Published var emergencyAlert: String? = nil
+    @Published var recentBroadcasts: [Broadcast] = []
     @Published var statusUpdateMessage: String? = nil
     
     private var db = Firestore.firestore()
@@ -34,23 +35,37 @@ class IncidentManager: ObservableObject {
     private func startListeningForBroadcasts() {
         broadcastListener = db.collection("broadcasts")
             .order(by: "timestamp", descending: true)
-            .limit(to: 1)
+            .limit(to: 10) // Son 10 duyuruyu çek
             .addSnapshotListener { [weak self] snapshot, error in
-                guard let document = snapshot?.documents.first else { return }
-                let data = document.data()
-                if let message = data["message"] as? String,
-                   let timestamp = data["timestamp"] as? Timestamp {
-                    // Sadece son 1 dakika içinde atılan mesajları göster
-                    if abs(timestamp.dateValue().timeIntervalSinceNow) < 60 {
-                        DispatchQueue.main.async {
-                            self?.emergencyAlert = message
+                guard let documents = snapshot?.documents else { return }
+                
+                let allBroadcasts = documents.compactMap { doc -> Broadcast? in
+                    let data = doc.data()
+                    if let message = data["message"] as? String,
+                       let timestamp = data["timestamp"] as? Timestamp {
+                        return Broadcast(documentId: doc.documentID, message: message, timestamp: timestamp.dateValue())
+                    }
+                    return nil
+                }
+                
+                DispatchQueue.main.async {
+                    // 24 saat içindeki duyuruları filtrele
+                    self?.recentBroadcasts = allBroadcasts.filter { 
+                        abs($0.timestamp.timeIntervalSinceNow) < 86400 
+                    }
+                    
+                    // En sonuncusu için anlık pop-up göster (eğer son 5 dakika içindeyse)
+                    if let latest = allBroadcasts.first,
+                       abs(latest.timestamp.timeIntervalSinceNow) < 300 {
+                        if self?.emergencyAlert != latest.message {
+                            self?.emergencyAlert = latest.message
                         }
                     }
                 }
             }
     }
     
-    // Real-time listener for incidents
+    // real-time listener for incidents
     private func startListeningForIncidents() {
         listenerRegistration = db.collection("incidents")
             .order(by: "dateReported", descending: true)
@@ -79,6 +94,7 @@ class IncidentManager: ObservableObject {
                         return nil
                     }
                     
+                    let lastUpdatedTimestamp = data["lastUpdated"] as? Timestamp
                     let id = UUID(uuidString: doc.documentID) ?? UUID()
                     let imageUrl = data["imageUrl"] as? String
                     
@@ -89,13 +105,14 @@ class IncidentManager: ObservableObject {
                         description: description,
                         status: status,
                         dateReported: timestamp.dateValue(),
+                        lastUpdated: lastUpdatedTimestamp?.dateValue() ?? timestamp.dateValue(),
                         latitude: latitude,
                         longitude: longitude,
                         reporterId: reporterId,
                         imageUrl: imageUrl
                     )
 
-                    // Durum Değişikliği Bildirimi Kontrolü
+                    // durum Değişikliği Bildirimi Kontrolü
                     if let oldStatus = self?.lastKnownStatuses[id], oldStatus != status {
                         self?.notifyStatusChange(for: incident)
                     }
@@ -108,9 +125,10 @@ class IncidentManager: ObservableObject {
     
     private func notifyStatusChange(for incident: Incident) {
         // Gerçekte burada Push Notification gider.
-        // Biz simülasyon olarak statusUpdateMessage set ediyoruz.
+        // biz simülasyon olarak statusUpdateMessage set ediyoruz ve haptic veriyoruz.
         DispatchQueue.main.async {
             self.statusUpdateMessage = "'\(incident.title)' başlıklı bildirimin durumu '\(incident.status.rawValue)' olarak güncellendi."
+            UINotificationFeedbackGenerator().notificationOccurred(.warning)
         }
     }
 
@@ -122,7 +140,15 @@ class IncidentManager: ObservableObject {
         db.collection("broadcasts").addDocument(data: broadcastData)
     }
     
-    // Filtrelenmiş Liste
+    func deleteBroadcast(broadcastId: String) {
+        db.collection("broadcasts").document(broadcastId).delete { error in
+            if let error = error {
+                print("Error deleting broadcast: \(error)")
+            }
+        }
+    }
+    
+    // filtrelenmiş Liste
     func filteredIncidents(for user: User?) -> [Incident] {
         return incidents.filter { incident in
             let matchesSearch = searchText.isEmpty || 
@@ -138,11 +164,11 @@ class IncidentManager: ObservableObject {
     
     func seedSampleData(user: User) {
         let sampleData: [(IncidentType, String, String, Double, Double, String?)] = [
-            (.health, "Revir Kapalı", "Kütüphane yanındaki revir şu an hizmet vermiyor.", 39.9020, 41.2470, "https://picsum.photos/seed/health/600/400"),
-            (.security, "Aydınlatma Sorunu", "Yemekhane yolundaki sokak lambaları yanmıyor.", 39.9010, 41.2490, nil),
-            (.technical, "Asansör Arızası", "Mühendislik binası B blok asansörü 3. katta kaldı.", 39.9030, 41.2460, "https://picsum.photos/seed/tech/600/400"),
-            (.environmental, "Su Sızıntısı", "Spor salonu girişinde su sızıntısı var.", 39.9000, 41.2480, nil),
-            (.technical, "Wi-Fi Bağlantı Sorunu", "Öğrenci merkezi bölgesinde eduroam bağlantısı kopuyor.", 39.9015, 41.2485, nil)
+            (.health, "Revir Kapalı", "Kütüphane yanındaki revir şu an hizmet vermiyor.", 39.9020, 41.2445, "https://picsum.photos/seed/health/600/400"),
+            (.security, "Aydınlatma Sorunu", "Yemekhane yolundaki sokak lambaları yanmıyor.", 39.9012, 41.2450, nil),
+            (.technical, "Asansör Arızası", "Mühendislik binası B blok asansörü 3. katta kaldı.", 39.9016, 41.2442, "https://picsum.photos/seed/tech/600/400"),
+            (.environmental, "Su Sızıntısı", "Spor salonu girişinde su sızıntısı var.", 39.9008, 41.2435, nil),
+            (.technical, "Wi-Fi Bağlantı Sorunu", "Öğrenci merkezi bölgesinde eduroam bağlantısı kopuyor.", 39.9025, 41.2448, nil)
         ]
         
         for data in sampleData {
@@ -166,6 +192,7 @@ class IncidentManager: ObservableObject {
             "description": description,
             "status": IncidentStatus.open.rawValue,
             "dateReported": Timestamp(date: Date()),
+            "lastUpdated": Timestamp(date: Date()),
             "latitude": location.latitude,
             "longitude": location.longitude,
             "reporterId": user.id,
@@ -180,10 +207,11 @@ class IncidentManager: ObservableObject {
         }
     }
     
-    // Durum Güncelleme
+    // durum Güncelleme
     func updateStatus(for incidentId: UUID, newStatus: IncidentStatus) {
         db.collection("incidents").document(incidentId.uuidString).updateData([
-            "status": newStatus.rawValue
+            "status": newStatus.rawValue,
+            "lastUpdated": Timestamp(date: Date())
         ]) { error in
             if let error = error {
                 print("Error updating status: \(error)")
@@ -191,10 +219,11 @@ class IncidentManager: ObservableObject {
         }
     }
     
-    // Açıklama Düzenleme (Admin)
+    // açıklama Düzenleme (admin)
     func updateDescription(for incidentId: UUID, newDescription: String) {
         db.collection("incidents").document(incidentId.uuidString).updateData([
-            "description": newDescription
+            "description": newDescription,
+            "lastUpdated": Timestamp(date: Date())
         ]) { error in
             if let error = error {
                 print("Error updating description: \(error)")
@@ -202,7 +231,7 @@ class IncidentManager: ObservableObject {
         }
     }
     
-    // Bildirim Silme (Admin/Uygunsuz)
+    // bildirim Silme (admin)
     func deleteIncident(incidentId: UUID) {
         db.collection("incidents").document(incidentId.uuidString).delete { error in
             if let error = error {

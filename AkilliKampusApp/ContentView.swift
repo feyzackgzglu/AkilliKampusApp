@@ -22,42 +22,84 @@ struct ContentView: View {
         )) { item in
             Alert(title: Text("Bildirim"), message: Text(item.message), dismissButton: .default(Text("Tamam")))
         }
-        // [YENİ] Acil Durum Duyurusu (Overlay)
+        // [REVAMPED] Acil Durum Duyurusu (Premium Glassmorphic Overlay)
         .overlay(
-            Group {
+            ZStack {
                 if let msg = incidentManager.emergencyAlert {
-                    VStack {
-                        Spacer()
-                        VStack(spacing: 15) {
+                    // Glassmorphic Full Screen Background
+                    Rectangle()
+                        .fill(.ultraThinMaterial)
+                        .ignoresSafeArea()
+                        .transition(.opacity)
+                    
+                    VStack(spacing: 25) {
+                        // Header Icon with Glow
+                        ZStack {
+                            Circle()
+                                .fill(Color.red.opacity(0.2))
+                                .frame(width: 100, height: 100)
+                                .blur(radius: 20)
+                            
                             Image(systemName: "exclamationmark.triangle.fill")
-                                .font(.system(size: 50))
-                                .foregroundColor(.white)
+                                .font(.system(size: 60))
+                                .symbolRenderingMode(.multicolor)
+                                .foregroundStyle(.white)
+                                .shadow(color: .red.opacity(0.5), radius: 10)
+                        }
+                        
+                        VStack(spacing: 8) {
                             Text("ACİL DUYURU")
-                                .font(.headline)
+                                .font(.system(size: 24, weight: .black, design: .rounded))
+                                .tracking(2)
                                 .foregroundColor(.white)
-                            Text(msg)
-                                .font(.body)
-                                .multilineTextAlignment(.center)
-                                .foregroundColor(.white)
-                            Button("Anladım") {
+                            
+                            Rectangle()
+                                .fill(Color.white.opacity(0.3))
+                                .frame(width: 80, height: 2)
+                        }
+                        
+                        Text(msg)
+                            .font(.system(.body, design: .rounded))
+                            .fontWeight(.medium)
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(.white.opacity(0.9))
+                            .padding(.horizontal)
+                        
+                        Button(action: {
+                            withAnimation(.spring()) {
                                 incidentManager.emergencyAlert = nil
                             }
-                            .padding(.horizontal, 40)
-                            .padding(.vertical, 10)
-                            .background(Color.white)
-                            .foregroundColor(.red)
-                            .cornerRadius(20)
+                        }) {
+                            Text("Anladım")
+                                .font(.headline)
+                                .foregroundColor(.red)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(
+                                    Capsule()
+                                        .fill(Color.white)
+                                        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+                                )
                         }
-                        .padding(30)
-                        .background(Color.red)
-                        .cornerRadius(20)
-                        .shadow(radius: 20)
-                        .padding(40)
-                        Spacer()
+                        .padding(.top, 10)
                     }
-                    .background(Color.black.opacity(0.4).edgesIgnoringSafeArea(.all))
+                    .padding(35)
+                    .background(
+                        RoundedRectangle(cornerRadius: 30)
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color.red, Color(red: 0.6, green: 0, blue: 0)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .shadow(color: .black.opacity(0.3), radius: 30, x: 0, y: 20)
+                    )
+                    .padding(30)
+                    .transition(.scale.combined(with: .opacity))
                 }
             }
+            .animation(.spring(response: 0.5, dampingFraction: 0.7), value: incidentManager.emergencyAlert)
         )
         .onAppear {
             locationManager.requestPermission()

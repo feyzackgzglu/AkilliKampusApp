@@ -6,6 +6,8 @@ struct LoginView: View {
     @State private var password = ""
     @State private var showRegister = false
     @State private var showForgotPassword = false
+    @State private var resetMessage = ""
+    @State private var showResetSimulation = false
     
     var body: some View {
         VStack(spacing: 20) {
@@ -62,10 +64,11 @@ struct LoginView: View {
             .padding(.horizontal)
             
             Button("Şifremi Unuttum") {
-                showForgotPassword = true
-            }
-            .alert(isPresented: $showForgotPassword) {
-                Alert(title: Text("Şifre Sıfırlama"), message: Text("adresi e-postanıza bağlantı gönderildi."), dismissButton: .default(Text("Tamam")))
+                if email.isEmpty {
+                    authManager.authError = "Lütfen önce e-posta adresinizi giriniz."
+                } else {
+                    showResetSimulation = true
+                }
             }
             
             Spacer()
@@ -101,6 +104,9 @@ struct LoginView: View {
         .padding()
         .sheet(isPresented: $showRegister) {
             RegisterView(authManager: authManager)
+        }
+        .sheet(isPresented: $showResetSimulation) {
+            ForgotPasswordSimulationView(email: email)
         }
     }
 }

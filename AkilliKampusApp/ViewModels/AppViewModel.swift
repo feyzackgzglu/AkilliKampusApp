@@ -5,7 +5,7 @@ class AppViewModel: ObservableObject {
     @Published var selectedTab: Int = 0
     @Published var showingReportSheet: Bool = false
     
-    // Global errors or alerts can be managed here
+    // global errors or alerts managed here
     @Published var errorMessage: String?
     
     static let shared = AppViewModel()
